@@ -1,0 +1,41 @@
+The basics of raytracing.
+
+The raytracing program you have been given uses a simple naive reverse tracing implementation. The lighting model is lambert / phong.
+
+The heart of a raytracer is the ray intersect function. This casts a ray into the scene and tries to determine which object it hit. The ray intersect function can be called anywhere from millions to billions of times for a single image.
+
+Ray tracers perform rendering on every pixel of the screen exactly once. In a scanline renderer some pixels are skipped, other pixels might be rendered many times (with the z buffer handling order correctness). A ray tracer will calculate a single colour for each pixel one at a time. Each pixel is also stand alone - the value of any pixel is unaffected by any other pixel. This has advantages for parallel processing, since pixels are an easy way to divide the workload between threads. A quad core cpu could use 4 threads, each handling 25% of the image. 
+
+The ray tracer behaves as follows:
+Load the scene using a lua script.  (main.cpp:41)
+Loop over every pixel. (main.cpp:55)
+	Calculate a ray that goes from the camera through the screen pixel. (main.cpp:60)
+	Loop over every object in the scene. (scene.cpp:25)
+		If the ray hits an object, remember the closest intersect (the HitPoint class holds an intersect position, distance along the ray, if a hit happened and the surface normal at the intersect location). (scene.cpp:30)
+	End loop
+	If there was a ray intersect then (scene.cpp:67)
+		Loop over every light (scene.cpp:75)
+			Cast a shadow ray from the intersect point to the current light. (scene.cpp:88)
+			If the shadow ray reaches the light (or further) (scene.cpp:91)
+				No object is blocking the ray. Accumulate the diffuse light. (scene.cpp:103)
+			End if
+			Accumulate the specular light. (scene.cpp:110)
+		End loop
+		If the surface is reflective (scene.cpp:114)
+			Recursively trace in the reflected  direction (go back to step 3) (scene.cpp:121)
+		End if
+		Add diffuse, specular and reflective together to get a final colour for this ray. (scene.cpp:125)
+	Else
+		The final output colour will be based on the skybox.
+	End if
+	Set the pixel's colour to the result of the traced ray. (main.cpp:67)
+End loop
+
+	
+	
+	
+	
+	
+	
+	
+	
